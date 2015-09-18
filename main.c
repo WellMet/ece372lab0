@@ -15,15 +15,16 @@
 
 #define OUTPUT 0
 #define INPUT 1
+#define PRESSED 1
 
 //TODO: Define states of the state machine
 typedef enum stateTypeEnum{
-    led1, led2, led3
+    led1, led2, led3, wait
 } stateType;
 
 volatile stateType stateCurrent;
 volatile stateType stateNext;
-//TODO: Use volatile variables that change within interrupts
+volatile int status = 0;
 
 int main() {
     
@@ -33,12 +34,23 @@ int main() {
     //TODO: Write each initialization function
     initSwitch1();
     initLEDs();
-    //initTimer2();
+    initTimer2();
     initTimer1();
+    stateCurrent = wait; //set the starting state to no led's on
     
     while(1){
         if(PORTDbits.RD6 != 0){
+            TMR1 = 0;
+            T1CONbits.TON = 0;
+            if(status == 1){
+                status = 0;
+                stateCurrent = stateNext;
+            }
             switch(stateCurrent){
+            case(wait):
+                turnOnLED(0);
+                stateNext = led1;
+                break;
             case(led1):
                 turnOnLED(1);
                 stateNext = led2;
@@ -56,6 +68,12 @@ int main() {
                 break;
             }
         }
+        else if(PORTDbits.RD6 == 0){
+            if(status == 0){
+                T1CONbits.TON = 1;
+                status = PRESSED; //button was pressed
+            }
+        }
     }
     
     return 0;
@@ -64,6 +82,7 @@ int main() {
 void __ISR(_TIMER_1_VECTOR, IPL3SRS) _T1Interrupt(){
     IFS0bits.T1IF = 0; //pull down interrupt flag
     T1CONbits.TON = 0; //stop timer
+    TMR1 = 0;
     switch(stateCurrent){
         case(led1):
             stateNext = led3;
@@ -77,7 +96,7 @@ void __ISR(_TIMER_1_VECTOR, IPL3SRS) _T1Interrupt(){
     }
 }
 
-void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SRS) _CNInterrupt(){
+void __ISR(_CHANGE_NOTICE_VECTOR, IPL7SRS) _CNInterrupt(){
     IFS1bits.CNDIF = 0;
     TMR1 = 0;
     if(PORTDbits.RD6 == 0){

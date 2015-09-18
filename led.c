@@ -21,6 +21,11 @@ void initLEDs(){
 void turnOnLED(int led){
     
     switch(led) {
+        case(0):
+            LATDbits.LATD0 = 0;
+            LATDbits.LATD1 = 0;
+            LATDbits.LATD2 = 0;
+            break;            
         case(1):
             LATDbits.LATD0 = 1;
             LATDbits.LATD1 = 0;
