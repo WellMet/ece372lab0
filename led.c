@@ -10,6 +10,7 @@
 #define OUTPUT 0
 #define INPUT 1
 
+//configure the three leds as output
 void initLEDs(){
     
     //Configure LEDs as output
@@ -18,6 +19,7 @@ void initLEDs(){
     TRISDbits.TRISD2 = OUTPUT;
 }
 
+//accepts integer number specifying which led to turn on. 0 = all off
 void turnOnLED(int led){
     
     switch(led) {

@@ -17,13 +17,16 @@
 #define INPUT 1
 #define PRESSED 1
 
-//TODO: Define states of the state machine
+//states of the state machine
 typedef enum stateTypeEnum{
     led1, led2, led3, wait
 } stateType;
 
+//stateCurrent and stateNext are used to control the state machine states
 volatile stateType stateCurrent;
 volatile stateType stateNext;
+
+//used to signify a distinct button press (because the ISR does not work properly)
 volatile int status = 0;
 
 int main() {
@@ -31,11 +34,12 @@ int main() {
     //This function is necessary to use interrupts. 
     enableInterrupts();
     
-    //TODO: Write each initialization function
+    //initialize the switch, all three LEDs, and the main timer
     initSwitch1();
     initLEDs();
     initTimer2();
     initTimer1();
+    
     stateCurrent = wait; //set the starting state to no led's on
     
     while(1){
@@ -79,6 +83,7 @@ int main() {
     return 0;
 }
 
+//interrupt function for timer 1.  Reverses the next state 
 void __ISR(_TIMER_1_VECTOR, IPL3SRS) _T1Interrupt(){
     IFS0bits.T1IF = 0; //pull down interrupt flag
     T1CONbits.TON = 0; //stop timer
@@ -96,6 +101,7 @@ void __ISR(_TIMER_1_VECTOR, IPL3SRS) _T1Interrupt(){
     }
 }
 
+//change notification ISR for when button RD6 is pressed.  While the button is pressed the timer will count up.  Releasing the button changes the states
 void __ISR(_CHANGE_NOTICE_VECTOR, IPL7SRS) _CNInterrupt(){
     IFS1bits.CNDIF = 0;
     TMR1 = 0;

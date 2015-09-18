@@ -9,6 +9,7 @@
 #define OUTPUT 0
 #define INPUT 1
 
+//setup the button rd6 for input
 void initSwitch1(){
     //Configure the switch as an input
     TRISDbits.TRISD6 = INPUT;

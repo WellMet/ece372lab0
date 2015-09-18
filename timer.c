@@ -8,7 +8,7 @@
 
 #include <xc.h>
 
-
+//setup the timer for the program
 void initTimer1(){
     TMR1 = 0;// clear TMR1
     PR1 = 1221*2;// Initialize PR1
@@ -20,16 +20,16 @@ void initTimer1(){
     T1CONbits.TON = 0;// Turn the timer on
 }
 
+//timer 2 setup. not used
 initTimer2(){
-    TMR2 = 0;// clear TMR1
+    TMR2 = 0;// clear TMR2
     T2CONbits.TCKPS = 0; // Initialize pre-scalar
     T2CONbits.TCS = 0; // Setting the oscillator
     IFS0bits.T2IF = 0;// Put the flag down
 }
 
+//delay setup. not used
 delayMs(int delay){
-    //TODO: Using timer 2, create a delay
-    // that is delay amount of ms.
     TMR2 = 0;
     PR2 = delay*624;
     IFS0bits.T2IF = 0;
