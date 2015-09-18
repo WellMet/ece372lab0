@@ -18,10 +18,11 @@
 
 //TODO: Define states of the state machine
 typedef enum stateTypeEnum{
-    led1, led2, led3, wait, wait2, debouncePress, debounceRelease, debounceRelease2
+    led1, led2, led3
 } stateType;
 
-volatile stateType state;
+volatile stateType stateCurrent;
+volatile stateType stateNext;
 //TODO: Use volatile variables that change within interrupts
 
 int main() {
@@ -32,26 +33,28 @@ int main() {
     //TODO: Write each initialization function
     initSwitch1();
     initLEDs();
-    initTimer2();
+    //initTimer2();
     initTimer1();
     
     while(1){
-        switch(state){
-            case wait:
-                if(IFS1bits.CNDIF == 1){
-                    state = wait2;
-                }
+        if(PORTDbits.RD6 != 0){
+            switch(stateCurrent){
+            case(led1):
+                turnOnLED(1);
+                stateNext = led2;
                 break;
-            case wait2:
-                if(IFS1bits.CNDIF == 1){
-                    //turn on previous LED
-                }
-            case debounceRelease:
-                if(IFS1bits.CNDIF == 1){
-                    turnOnLED(1);
-                    state = led1;
-                }
+            case(led2):
+                turnOnLED(2);
+                stateNext = led3;
                 break;
+            case(led3):
+                turnOnLED(3);
+                stateNext = led1;
+                break;
+            default:
+                stateCurrent = led1;
+                break;
+            }
         }
     }
     
@@ -59,9 +62,30 @@ int main() {
 }
 
 void __ISR(_TIMER_1_VECTOR, IPL3SRS) _T1Interrupt(){
-    //After two seconds timer 1 interrupt goes high.  Reverse to previous LED
-    IFS0bits.T1IF = 0;
-    state = wait2;
+    IFS0bits.T1IF = 0; //pull down interrupt flag
+    T1CONbits.TON = 0; //stop timer
+    switch(stateCurrent){
+        case(led1):
+            stateNext = led3;
+            break;
+        case(led2):
+            stateNext = led1;
+            break;
+        case(led3):
+            stateNext = led2;
+            break;
+    }
+}
 
+void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SRS) _CNInterrupt(){
+    IFS1bits.CNDIF = 0;
+    TMR1 = 0;
+    if(PORTDbits.RD6 == 0){
+      T1CONbits.TON = 1; //Turn on timer
+    }
+    else if(PORTDbits.RD6 == 1){
+        T1CONbits.TON = 0;
+        stateCurrent = stateNext;
+    }
 }
 

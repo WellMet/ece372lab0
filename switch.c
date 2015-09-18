@@ -19,6 +19,6 @@ void initSwitch1(){
     IEC1bits.CNDIE = 1;
     
     //flag and pull up resistor
-    IFS1bits.CNDIF = 0;
     CNPUDbits.CNPUD6 = 1;
+    IFS1bits.CNDIF = 0;
 }

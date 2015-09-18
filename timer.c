@@ -17,7 +17,7 @@ void initTimer1(){
     IEC0bits.T1IE = 1;// Enable the interrupt
     IFS0bits.T1IF = 0;// Put the flag down
     IPC1bits.T1IP = 3;// Configure the Interrupt Priority
-    T1CONbits.TON = 1;// Turn the timer on
+    T1CONbits.TON = 0;// Turn the timer on
 }
 
 initTimer2(){
